@@ -1,82 +1,23 @@
-class TileData 
-{
-  constructor(index, bg)
-  {
-    this.index = index
-    this.bg = bg
-    this.fg = 0
-  }
-}
-
-class Tilemap
-{
-  constructor(w, h)
-  {
-    this.w = w
-    this.h = h
-    this.tiles = Array(w * h)
-    i = 0
-    this.tiles.fill(TileData(i++, 0))
-    this.tilesprs = Array(w * h)
-  }
-  createMapSprites()
-  {
-    var cont = new PIXI.Container()
-    for (var i = 0; i < this.tiles.length; i++) 
-    {
-      var nt = PIXI.Sprite.from(spritesheet.textures[tilenames[this.tiles[i]]])
-      nt.x = i % this.w * 16
-      nt.y = Math.floor(i / this.w) * 16
-      nt.eventMode = 'static'
-      nt.on('pointerup', (event) => {
-        if(!tapmoved) {
-          console.log('tapped ')
-        } })
-      cont.addChild(nt)
-      this.tilesprs[i] = nt
-    }
-    
-    
-    gamemask.addChild(cont)
-    return cont
-  }
-}
 
 const app = new PIXI.Application();
 
-const tilenames = ['blank', 'grass', 'wall', 'eh']
-const tilesize = {w: 16, h: 16}
-const sprsrc = {...tilesize, x: 0, y: 0}
-
+//Prevent rightclick menu
+document.addEventListener('contextmenu', (event) =>
+{
+  event.preventDefault();
+});
 
 // Initialize the application
-await app.init({ background: '#101010', resizeTo: document.body });
+await app.init({ background: '#303030', resizeTo: document.body });
 
 // Append the application canvas to the document body
 document.body.appendChild(app.canvas);
 
-//Creating spritesheet data
-const maxTiles = 4
-var atlasData = {frames: {},
-  meta: {image: '/Sprites/Tile.png',
-    size: {w: 64, h: 64}
-  }
-}
-for (var i = 0; i < maxTiles; i++) {
-  atlasData.frames[tilenames[i]] = {frame : 
-  {x: i % 4 * 16, 
-  y: 16 * Math.floor(i / 4), 
-  ...tilesize},
-  
-    sourceSize: tilesize,
-    spriteSourceSize: sprsrc
-  }
-}
 
-var pointerdown = false
-var tapmoved = false
-var gamemask = new PIXI.Container ()
-gamemask.mask = new PIXI.Graphics().rect(0, 0, app.screen.width, app.screen.height - 400).fill(0xffffff)
+if(app.screen.width > app.screen.height)
+  gamemask.mask = new PIXI.Graphics().rect(0, 0, app.screen.width / 2, app.screen.height).fill(0xffffff)
+else
+  gamemask.mask = new PIXI.Graphics().rect(0, 0, app.screen.width, app.screen.height / 2).fill(0xffffff)
 
 gamemask.eventMode = 'static'
 gamemask.on('pointerdown', (event) =>
@@ -86,20 +27,25 @@ gamemask.on('pointerup', (event) =>
     {pointerdown = false})
 gamemask.on('pointerupoutside', (event) => 
     {pointerdown = false})
-gamemask.on('globalpointermove', (event) => {if(pointerdown) 
-    {targmap.x += event.movementX
+gamemask.on('globalpointermove', (event) => {if(pointerdown){
+  if(seltool == 0) //Move tool
+  {
+  targmap.x += event.movementX
      targmap.y += event.movementY
     if(Math.abs(event.movementX) + Math.abs(event.movementY) > 1)
       tapmoved = true
-    }})
+  } }})
 //app.stage.eventMode = 'static'
 gamemask.hitArea = new PIXI.Rectangle(0, 0, app.screen.width, app.screen.height)
+
+
+
 
 app.stage.addChild(gamemask)
 
 
 // Create the SpriteSheet from data and image
-const texturePromise = PIXI.Assets.load('/Sprites/Tile.png');
+const texturePromise = PIXI.Assets.load('/PixiJSGame2-main/Sprites/Tile.png');
 await texturePromise
 const spritesheet = new PIXI.Spritesheet(
 	PIXI.Texture.from(atlasData.meta.image),
@@ -111,5 +57,19 @@ await spritesheet.parse();
 
 // spritesheet is ready to use!
 
+//this sucked, why did it take hours to figure out how to change the scaling mode???
+spritesheet.textureSource.scaleMode = 'nearest'
+
+
 var mainmap = new Tilemap(10, 10)
-var targmap = mainmap.createMapSprites()
+var targmap = mainmap.createMapSprites(spritesheet)
+targmap.scale = 2
+
+var toolbutton = PIXI.Sprite.from(spritesheet.textures['conveyorunknown'])
+toolbutton.x = app.screen.width / 2 + 32
+toolbutton.y = 32
+toolbutton.scale = 4
+toolbutton.eventMode = 'static'
+toolbutton.on('pointerdown', (event => {
+  if(seltool == 0) {seltool = 1; console.log("boop")} else {seltool = 0; console.log("beep")}}))
+app.stage.addChild(toolbutton)
