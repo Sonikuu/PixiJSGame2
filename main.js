@@ -45,7 +45,7 @@ app.stage.addChild(gamemask)
 
 
 // Create the SpriteSheet from data and image
-const texturePromise = PIXI.Assets.load('/PixiJSGame2-main/Sprites/Tile.png');
+const texturePromise = PIXI.Assets.load('./Sprites/Tile.png');
 await texturePromise
 const spritesheet = new PIXI.Spritesheet(
 	PIXI.Texture.from(atlasData.meta.image),

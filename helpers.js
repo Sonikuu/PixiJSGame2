@@ -17,7 +17,7 @@ var placecontrols = {mousestart: {x: 0, y: 0}, lasttile: {x: 0, y: 0}, lastindex
 //Creating spritesheet data
 const maxTiles = 16
 var atlasData = {frames: {},
-  meta: {image: '/PixiJSGame2-main/Sprites/Tile.png',
+  meta: {image: './Sprites/Tile.png',
     size: {w: 64, h: 64},
     
   }
@@ -87,6 +87,7 @@ class Tilemap
       cont.addChild(nt)
       this.tilesprs[i] = nt
       nt.tilemap = this
+      nt.z = 5
 
       let ntfg = PIXI.Sprite.from(spritesheet.textures[tilenames[this.tiles[i].fg]])
       ntfg.x = i % this.w * 16
@@ -95,6 +96,7 @@ class Tilemap
       ntfg.eventMode = 'none'
       cont.addChild(ntfg)
       this.tilesprsfg[i] = ntfg
+      ntfg.z = 10
       nt.fg = ntfg//we cant have ntfg as a child because it's "depreciated"
       //but nobody said I cant do this :)
     }
@@ -116,8 +118,8 @@ function tilePointerUp(nt, spritesheet)
   {
     if (!tapmoved) 
     {
-      nt.tiledata.bg += 1;
-      nt.texture = spritesheet.textures[tilenames[nt.tiledata.bg]]
+      //nt.tiledata.bg += 1;
+     // nt.texture = spritesheet.textures[tilenames[nt.tiledata.bg]]
     }
   }
 }
@@ -126,10 +128,12 @@ function tilePointerDown(nt)
 {
   return (event) =>
   {
-    if (!tapmoved) 
+    //if (!tapmoved) 
     {
       placecontrols.mousestart = nt.tilemap.getPosFromIndex(nt.tiledata.index)
       placecontrols.lasttile = placecontrols.mousestart
+      placecontrols.lastindex = nt.tiledata.index
+      console.log("tdown")
     }
   }
 }
